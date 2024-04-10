@@ -1,0 +1,45 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the dataset
+data = pd.read_csv("/content/agricultural_raw_material_prices.csv")
+
+# Highest Average Price
+highest_avg_price = data.groupby("Material")["Price"].mean().sort_values(ascending=False).head(5)
+print("Top 5 Highest Average Price Materials:")
+print(highest_avg_price)
+
+# Lowest Average Price
+lowest_avg_price = data.groupby("Material")["Price"].mean().sort_values(ascending=True).head(5)
+print("\nTop 5 Lowest Average Price Materials:")
+print(lowest_avg_price)
+
+# Calculate Percent Change
+def calculate_percent_change(group):
+    base_price = group.iloc[0]["Price"]  # Assuming first year is base year
+    group["Percent Change"] = ((group["Price"] - base_price) / base_price) * 100
+    return group
+
+data = data.groupby("Material").apply(calculate_percent_change)
+
+# Highest Average % Change
+highest_avg_change = data.groupby("Material")["Percent Change"].mean().nlargest(5)
+print("\nTop 5 Materials with Highest Average % Change:")
+print(highest_avg_change)
+
+# Lowest Average % Change
+lowest_avg_change = data.groupby("Material")["Percent Change"].mean().nsmallest(5)
+print("\nTop 5 Materials with Lowest Average % Change:")
+print(lowest_avg_change)
+
+# Price Range
+price_range = data.groupby("Material")["Price"].agg(lambda x: x.max() - x.min())
+print("\nRange of Prices for Each Material:")
+print(price_range)
+# Correlation Matrix
+correlation = data.drop("Year", axis=1).corr()
+
+# Heatmap with Annotations
+sns.heatmap(correlation, annot=True)
+plt.show()
